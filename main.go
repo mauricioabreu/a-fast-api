@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/people"
@@ -28,7 +29,7 @@ func main() {
 
 	queries := people.New(db)
 
-	app.Get("/contagem-pessoas", func(c *fiber.Ctx) error {
+	app.Get("/count-people", func(c *fiber.Ctx) error {
 		ctx := context.Background()
 		total, err := queries.CountPeople(ctx)
 		if err != nil {
@@ -36,6 +37,20 @@ func main() {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 		return c.SendString(fmt.Sprintf("%d", total))
+	})
+
+	app.Post("/people", func(c *fiber.Ctx) error {
+		p := new(people.PersonDTO)
+
+		if err := c.BodyParser(p); err != nil {
+			return err
+		}
+
+		validate := validator.New()
+		errs := validate.Struct(p)
+		fmt.Println(errs)
+
+		return c.SendString("")
 	})
 
 	app.Listen(":80")
