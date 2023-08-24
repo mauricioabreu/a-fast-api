@@ -1,0 +1,36 @@
+services:
+  api1:
+    container_name: api1
+    build: .
+    ports:
+      - "80"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      - POSTGRES_USER=afastapi
+      - POSTGRES_PASSWORD=afastapi
+      - POSTGRES_DB=afastapi
+  lb:
+    sysctls:
+      net.core.somaxconn: 4096
+    container_name: lb
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+    ports:
+      - "9999:9999"
+  db:
+    container_name: db
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=afastapi
+      - POSTGRES_PASSWORD=afastapi
+      - POSTGRES_DB=afastapi
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
