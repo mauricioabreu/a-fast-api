@@ -9,7 +9,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/lib/pq"
+	"github.com/mauricioabreu/a-fast-api/db"
 	"github.com/mauricioabreu/a-fast-api/people"
+	"github.com/mauricioabreu/a-fast-api/validators"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -21,17 +23,17 @@ func main() {
 
 	conn := fmt.Sprintf("host=db user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-	db, err := sql.Open("postgres", conn)
+	dbc, err := sql.Open("postgres", conn)
 	if err != nil {
 		fmt.Println("error connecting to the database: ", err)
 		os.Exit(1)
 	}
 
-	queries := people.New(db)
+	queries := db.New(dbc)
 
 	app.Get("/count-people", func(c *fiber.Ctx) error {
 		ctx := context.Background()
-		total, err := queries.CountPeople(ctx)
+		total, err := people.CountPeople(queries, ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to count people")
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -47,8 +49,15 @@ func main() {
 		}
 
 		validate := validator.New()
-		errs := validate.Struct(p)
-		fmt.Println(errs)
+
+		if errs := validators.Validate(validate, p); len(errs) > 0 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": errs})
+		}
+
+		ctx := context.Background()
+		if err := people.InsertPerson(*p, queries, ctx); err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
 
 		return c.SendString("")
 	})

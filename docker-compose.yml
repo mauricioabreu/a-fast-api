@@ -8,6 +8,7 @@ services:
       - db
     volumes:
       - .:/app
+    working_dir: /app
     environment:
       - POSTGRES_USER=afastapi
       - POSTGRES_PASSWORD=afastapi

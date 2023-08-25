@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.20.0
 
-package people
+package db
 
 import (
 	"database/sql"
