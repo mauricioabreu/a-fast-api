@@ -55,11 +55,28 @@ func main() {
 		}
 
 		ctx := context.Background()
-		if err := people.InsertPerson(*p, queries, ctx); err != nil {
+		uid, err := people.InsertPerson(*p, queries, ctx)
+		if err != nil {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
-		return c.SendString("")
+		c.Location(fmt.Sprintf("/people/%s", uid))
+		return c.SendStatus(fiber.StatusCreated)
+	})
+
+	app.Get("/people/:id", func(c *fiber.Ctx) error {
+		ctx := context.Background()
+		p, err := people.FindPerson(c.Params("id"), queries, ctx)
+
+		if err == sql.ErrNoRows {
+			return c.SendStatus(fiber.StatusNotFound)
+		}
+
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.Status(fiber.StatusOK).JSON(p)
 	})
 
 	app.Listen(":80")

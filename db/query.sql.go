@@ -22,6 +22,31 @@ func (q *Queries) CountPeople(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const findPerson = `-- name: FindPerson :one
+SELECT id, nickname, name, birthdate, stack FROM people WHERE id = $1
+`
+
+type FindPersonRow struct {
+	ID        string
+	Nickname  string
+	Name      string
+	Birthdate time.Time
+	Stack     sql.NullString
+}
+
+func (q *Queries) FindPerson(ctx context.Context, id string) (FindPersonRow, error) {
+	row := q.db.QueryRowContext(ctx, findPerson, id)
+	var i FindPersonRow
+	err := row.Scan(
+		&i.ID,
+		&i.Nickname,
+		&i.Name,
+		&i.Birthdate,
+		&i.Stack,
+	)
+	return i, err
+}
+
 const insertPerson = `-- name: InsertPerson :exec
 INSERT INTO people (
     id, nickname, name, birthdate, stack

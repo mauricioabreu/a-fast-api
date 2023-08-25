@@ -7,3 +7,6 @@ INSERT INTO people (
 ) VALUES (
     $1, $2, $3, $4, $5
 );
+
+-- name: FindPerson :one
+SELECT id, nickname, name, birthdate, stack FROM people WHERE id = $1;
