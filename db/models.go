@@ -5,15 +5,14 @@
 package db
 
 import (
-	"database/sql"
-	"time"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Person struct {
 	ID         string
 	Nickname   string
 	Name       string
-	Birthdate  time.Time
-	Stack      sql.NullString
-	TermSearch sql.NullString
+	Birthdate  pgtype.Date
+	Stack      pgtype.Text
+	TermSearch pgtype.Text
 }

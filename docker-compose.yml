@@ -13,6 +13,8 @@ services:
       - POSTGRES_USER=afastapi
       - POSTGRES_PASSWORD=afastapi
       - POSTGRES_DB=afastapi
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
   api2:
     <<: *api
     container_name: api2

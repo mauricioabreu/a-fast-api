@@ -7,8 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countPeople = `-- name: CountPeople :one
@@ -16,7 +16,7 @@ SELECT COUNT(1) FROM people
 `
 
 func (q *Queries) CountPeople(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countPeople)
+	row := q.db.QueryRow(ctx, countPeople)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -30,12 +30,12 @@ type FindPersonRow struct {
 	ID        string
 	Nickname  string
 	Name      string
-	Birthdate time.Time
-	Stack     sql.NullString
+	Birthdate pgtype.Date
+	Stack     pgtype.Text
 }
 
 func (q *Queries) FindPerson(ctx context.Context, id string) (FindPersonRow, error) {
-	row := q.db.QueryRowContext(ctx, findPerson, id)
+	row := q.db.QueryRow(ctx, findPerson, id)
 	var i FindPersonRow
 	err := row.Scan(
 		&i.ID,
@@ -59,12 +59,12 @@ type InsertPersonParams struct {
 	ID        string
 	Nickname  string
 	Name      string
-	Birthdate time.Time
-	Stack     sql.NullString
+	Birthdate pgtype.Date
+	Stack     pgtype.Text
 }
 
 func (q *Queries) InsertPerson(ctx context.Context, arg InsertPersonParams) error {
-	_, err := q.db.ExecContext(ctx, insertPerson,
+	_, err := q.db.Exec(ctx, insertPerson,
 		arg.ID,
 		arg.Nickname,
 		arg.Name,
@@ -82,12 +82,12 @@ type SearchPeopleRow struct {
 	ID        string
 	Nickname  string
 	Name      string
-	Birthdate time.Time
-	Stack     sql.NullString
+	Birthdate pgtype.Date
+	Stack     pgtype.Text
 }
 
-func (q *Queries) SearchPeople(ctx context.Context, termSearch sql.NullString) ([]SearchPeopleRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchPeople, termSearch)
+func (q *Queries) SearchPeople(ctx context.Context, termSearch pgtype.Text) ([]SearchPeopleRow, error) {
+	rows, err := q.db.Query(ctx, searchPeople, termSearch)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +105,6 @@ func (q *Queries) SearchPeople(ctx context.Context, termSearch sql.NullString) (
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

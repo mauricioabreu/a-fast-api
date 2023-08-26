@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -53,12 +52,9 @@ func main() {
 
 	app.Use(logger.New())
 
-	conn := fmt.Sprintf("host=db user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-	dbc, err := sql.Open("postgres", conn)
+	dbc, err := db.NewDB()
 	if err != nil {
-		fmt.Println("error connecting to the database: ", err)
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
 
 	queries := db.New(dbc)

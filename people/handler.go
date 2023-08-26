@@ -2,12 +2,12 @@ package people
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
 )
@@ -26,8 +26,8 @@ func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string,
 		ID:        uid,
 		Nickname:  *person.Nickname,
 		Name:      *person.Name,
-		Birthdate: birthDate,
-		Stack:     sql.NullString{String: strings.Join(person.Stack, ","), Valid: true},
+		Birthdate: pgtype.Date{Time: birthDate, Valid: true},
+		Stack:     pgtype.Text{String: strings.Join(person.Stack, ","), Valid: true},
 	}); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" && pqErr.Constraint == "nickname_pk" {
@@ -53,13 +53,13 @@ func FindPerson(uid string, q *db.Queries, ctx context.Context) (*PersonDTO, err
 		ID:        person.ID,
 		Nickname:  &person.Nickname,
 		Name:      &person.Name,
-		Birthdate: person.Birthdate.Format("2006-01-02"),
+		Birthdate: person.Birthdate.Time.String(),
 		Stack:     strings.Split(person.Stack.String, ","),
 	}, nil
 }
 
 func SearchPeople(term string, q *db.Queries, ctx context.Context) ([]*PersonDTO, error) {
-	p, err := q.SearchPeople(ctx, sql.NullString{String: fmt.Sprintf("%%%s%%", term), Valid: true})
+	p, err := q.SearchPeople(ctx, pgtype.Text{String: fmt.Sprintf("%%%s%%", term), Valid: true})
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func SearchPeople(term string, q *db.Queries, ctx context.Context) ([]*PersonDTO
 			ID:        person.ID,
 			Nickname:  &person.Nickname,
 			Name:      &person.Name,
-			Birthdate: person.Birthdate.Format("2006-01-02"),
+			Birthdate: person.Birthdate.Time.String(),
 			Stack:     strings.Split(person.Stack.String, ","),
 		})
 	}
