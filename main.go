@@ -47,7 +47,9 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to register validation")
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		Prefork: true,
+	})
 
 	app.Use(logger.New())
 
