@@ -17,8 +17,6 @@ services:
     <<: *api
     container_name: api2
   lb:
-    sysctls:
-      net.core.somaxconn: 4096
     container_name: lb
     image: nginx:latest
     volumes:
