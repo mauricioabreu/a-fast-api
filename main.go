@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -57,6 +58,11 @@ func main() {
 
 		ctx := context.Background()
 		uid, err := people.InsertPerson(*p, queries, ctx)
+		if errors.Is(err, people.ErrUniqueNickname) {
+			return c.Status(fiber.StatusBadRequest).JSON(
+				fiber.Map{"errors": map[string]string{"nickname": "already exists"}})
+		}
+
 		if err != nil {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}

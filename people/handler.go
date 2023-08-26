@@ -8,7 +8,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
+)
+
+var (
+	ErrUniqueNickname = fmt.Errorf("nickname already exists")
 )
 
 func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string, error) {
@@ -24,6 +29,11 @@ func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string,
 		Birthdate: birthDate,
 		Stack:     sql.NullString{String: strings.Join(person.Stack, ","), Valid: true},
 	}); err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" && pqErr.Constraint == "nickname_pk" {
+				return "", ErrUniqueNickname
+			}
+		}
 		return "", err
 	}
 
