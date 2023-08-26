@@ -2,18 +2,20 @@ package people
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
 )
 
 var (
 	ErrUniqueNickname = fmt.Errorf("nickname already exists")
+	ErrNotFound       = fmt.Errorf("person not found")
 )
 
 func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string, error) {
@@ -29,8 +31,9 @@ func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string,
 		Birthdate: pgtype.Date{Time: birthDate, Valid: true},
 		Stack:     pgtype.Text{String: strings.Join(person.Stack, ","), Valid: true},
 	}); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" && pqErr.Constraint == "nickname_pk" {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.ConstraintName == "nickname_pk" {
 				return "", ErrUniqueNickname
 			}
 		}
