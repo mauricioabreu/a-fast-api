@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -77,6 +78,20 @@ func main() {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(p)
+	})
+
+	app.Get("/people", func(c *fiber.Ctx) error {
+		term := c.Query("t")
+		if strings.TrimSpace(term) == "" {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		ppl, err := people.SearchPeople(term, queries, context.Background())
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.Status(fiber.StatusOK).JSON(ppl)
 	})
 
 	app.Listen(":80")

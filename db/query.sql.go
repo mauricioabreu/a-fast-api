@@ -73,3 +73,44 @@ func (q *Queries) InsertPerson(ctx context.Context, arg InsertPersonParams) erro
 	)
 	return err
 }
+
+const serchPeople = `-- name: SerchPeople :many
+SELECT id, nickname, name, birthdate, stack FROM people WHERE term_search LIKE $1 LIMIT 50
+`
+
+type SerchPeopleRow struct {
+	ID        string
+	Nickname  string
+	Name      string
+	Birthdate time.Time
+	Stack     sql.NullString
+}
+
+func (q *Queries) SerchPeople(ctx context.Context, termSearch sql.NullString) ([]SerchPeopleRow, error) {
+	rows, err := q.db.QueryContext(ctx, serchPeople, termSearch)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SerchPeopleRow
+	for rows.Next() {
+		var i SerchPeopleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Nickname,
+			&i.Name,
+			&i.Birthdate,
+			&i.Stack,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

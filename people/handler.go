@@ -3,6 +3,7 @@ package people
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -34,15 +35,36 @@ func CountPeople(q *db.Queries, ctx context.Context) (int64, error) {
 }
 
 func FindPerson(uid string, q *db.Queries, ctx context.Context) (*PersonDTO, error) {
-	p, err := q.FindPerson(ctx, uid)
+	person, err := q.FindPerson(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
 	return &PersonDTO{
-		ID:        p.ID,
-		Nickname:  p.Nickname,
-		Name:      p.Name,
-		Birthdate: p.Birthdate.Format("2006-01-02"),
-		Stack:     strings.Split(p.Stack.String, ","),
+		ID:        person.ID,
+		Nickname:  person.Nickname,
+		Name:      person.Name,
+		Birthdate: person.Birthdate.Format("2006-01-02"),
+		Stack:     strings.Split(person.Stack.String, ","),
 	}, nil
+}
+
+func SearchPeople(term string, q *db.Queries, ctx context.Context) ([]*PersonDTO, error) {
+	p, err := q.SerchPeople(ctx, sql.NullString{String: fmt.Sprintf("'%%%s%%'", term), Valid: true})
+	if err != nil {
+		return nil, err
+	}
+
+	ppl := make([]*PersonDTO, 0, len(p))
+
+	for _, person := range p {
+		ppl = append(ppl, &PersonDTO{
+			ID:        person.ID,
+			Nickname:  person.Nickname,
+			Name:      person.Name,
+			Birthdate: person.Birthdate.Format("2006-01-02"),
+			Stack:     strings.Split(person.Stack.String, ","),
+		})
+	}
+
+	return ppl, nil
 }
