@@ -24,8 +24,8 @@ func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string,
 	uid := uuid.New().String()
 	if err := q.InsertPerson(ctx, db.InsertPersonParams{
 		ID:        uid,
-		Nickname:  person.Nickname,
-		Name:      person.Name,
+		Nickname:  *person.Nickname,
+		Name:      *person.Name,
 		Birthdate: birthDate,
 		Stack:     sql.NullString{String: strings.Join(person.Stack, ","), Valid: true},
 	}); err != nil {
@@ -51,15 +51,15 @@ func FindPerson(uid string, q *db.Queries, ctx context.Context) (*PersonDTO, err
 	}
 	return &PersonDTO{
 		ID:        person.ID,
-		Nickname:  person.Nickname,
-		Name:      person.Name,
+		Nickname:  &person.Nickname,
+		Name:      &person.Name,
 		Birthdate: person.Birthdate.Format("2006-01-02"),
 		Stack:     strings.Split(person.Stack.String, ","),
 	}, nil
 }
 
 func SearchPeople(term string, q *db.Queries, ctx context.Context) ([]*PersonDTO, error) {
-	p, err := q.SerchPeople(ctx, sql.NullString{String: fmt.Sprintf("'%%%s%%'", term), Valid: true})
+	p, err := q.SearchPeople(ctx, sql.NullString{String: fmt.Sprintf("%%%s%%", term), Valid: true})
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +69,8 @@ func SearchPeople(term string, q *db.Queries, ctx context.Context) ([]*PersonDTO
 	for _, person := range p {
 		ppl = append(ppl, &PersonDTO{
 			ID:        person.ID,
-			Nickname:  person.Nickname,
-			Name:      person.Name,
+			Nickname:  &person.Nickname,
+			Name:      &person.Name,
 			Birthdate: person.Birthdate.Format("2006-01-02"),
 			Stack:     strings.Split(person.Stack.String, ","),
 		})

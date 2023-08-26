@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	_ "github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
 	"github.com/mauricioabreu/a-fast-api/people"
@@ -18,10 +19,37 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func validateStack(fl validator.FieldLevel) bool {
+	if fl.Field().IsZero() {
+		return true
+	}
+
+	elements, ok := fl.Field().Interface().([]interface{})
+	if !ok {
+		return false
+	}
+
+	for _, elem := range elements {
+		str, ok := elem.(string)
+		if !ok || len(str) > 32 {
+			return false
+		}
+	}
+
+	return true
+}
+
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
+	validate := validator.New()
+	if err := validate.RegisterValidation("validateStack", validateStack); err != nil {
+		log.Fatal().Err(err).Msg("failed to register validation")
+	}
+
 	app := fiber.New()
+
+	app.Use(logger.New())
 
 	conn := fmt.Sprintf("host=db user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
@@ -33,7 +61,7 @@ func main() {
 
 	queries := db.New(dbc)
 
-	app.Get("/count-people", func(c *fiber.Ctx) error {
+	app.Get("/contagem-pessoas", func(c *fiber.Ctx) error {
 		ctx := context.Background()
 		total, err := people.CountPeople(queries, ctx)
 		if err != nil {
@@ -43,14 +71,16 @@ func main() {
 		return c.SendString(fmt.Sprintf("%d", total))
 	})
 
-	app.Post("/people", func(c *fiber.Ctx) error {
+	app.Post("/pessoas", func(c *fiber.Ctx) error {
 		p := new(people.PersonDTO)
 
 		if err := c.BodyParser(p); err != nil {
-			return err
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": "invalid json"})
 		}
 
-		validate := validator.New()
+		if p.Name == nil || p.Nickname == nil {
+			return c.SendStatus(fiber.StatusUnprocessableEntity)
+		}
 
 		if errs := validators.Validate(validate, p); len(errs) > 0 {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": errs})
@@ -67,11 +97,11 @@ func main() {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
-		c.Location(fmt.Sprintf("/people/%s", uid))
+		c.Location(fmt.Sprintf("/pessoas/%s", uid))
 		return c.SendStatus(fiber.StatusCreated)
 	})
 
-	app.Get("/people/:id", func(c *fiber.Ctx) error {
+	app.Get("/pessoas/:id", func(c *fiber.Ctx) error {
 		ctx := context.Background()
 		p, err := people.FindPerson(c.Params("id"), queries, ctx)
 
@@ -86,7 +116,7 @@ func main() {
 		return c.Status(fiber.StatusOK).JSON(p)
 	})
 
-	app.Get("/people", func(c *fiber.Ctx) error {
+	app.Get("/pessoas", func(c *fiber.Ctx) error {
 		term := c.Query("t")
 		if strings.TrimSpace(term) == "" {
 			return c.SendStatus(fiber.StatusBadRequest)

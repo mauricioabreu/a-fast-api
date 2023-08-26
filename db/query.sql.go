@@ -74,11 +74,11 @@ func (q *Queries) InsertPerson(ctx context.Context, arg InsertPersonParams) erro
 	return err
 }
 
-const serchPeople = `-- name: SerchPeople :many
+const searchPeople = `-- name: SearchPeople :many
 SELECT id, nickname, name, birthdate, stack FROM people WHERE term_search LIKE $1 LIMIT 50
 `
 
-type SerchPeopleRow struct {
+type SearchPeopleRow struct {
 	ID        string
 	Nickname  string
 	Name      string
@@ -86,15 +86,15 @@ type SerchPeopleRow struct {
 	Stack     sql.NullString
 }
 
-func (q *Queries) SerchPeople(ctx context.Context, termSearch sql.NullString) ([]SerchPeopleRow, error) {
-	rows, err := q.db.QueryContext(ctx, serchPeople, termSearch)
+func (q *Queries) SearchPeople(ctx context.Context, termSearch sql.NullString) ([]SearchPeopleRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchPeople, termSearch)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SerchPeopleRow
+	var items []SearchPeopleRow
 	for rows.Next() {
-		var i SerchPeopleRow
+		var i SearchPeopleRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Nickname,

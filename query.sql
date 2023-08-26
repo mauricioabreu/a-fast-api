@@ -11,5 +11,5 @@ INSERT INTO people (
 -- name: FindPerson :one
 SELECT id, nickname, name, birthdate, stack FROM people WHERE id = $1;
 
--- name: SerchPeople :many
+-- name: SearchPeople :many
 SELECT id, nickname, name, birthdate, stack FROM people WHERE term_search LIKE $1 LIMIT 50;
