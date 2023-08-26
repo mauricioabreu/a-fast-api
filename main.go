@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+
 	_ "github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
 	"github.com/mauricioabreu/a-fast-api/people"
@@ -45,9 +46,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to register validation")
 	}
 
-	app := fiber.New(fiber.Config{
-		Prefork: true,
-	})
+	app := fiber.New()
 
 	app.Use(logger.New())
 
