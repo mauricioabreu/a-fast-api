@@ -46,7 +46,9 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to register validation")
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		Prefork: true,
+	})
 
 	app.Use(logger.New())
 
@@ -90,6 +92,7 @@ func main() {
 		}
 
 		if err != nil {
+			log.Error().Err(err).Msg("failed to insert person")
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
@@ -106,6 +109,7 @@ func main() {
 		}
 
 		if err != nil {
+			log.Error().Err(err).Msg("failed to find person")
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
@@ -120,11 +124,12 @@ func main() {
 
 		ppl, err := people.SearchPeople(term, queries, context.Background())
 		if err != nil {
+			log.Error().Err(err).Msg("failed to search people")
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 
 		return c.Status(fiber.StatusOK).JSON(ppl)
 	})
 
-	app.Listen(":80")
+	log.Fatal().Err(app.Listen(":80")).Msg("failed to start server")
 }
