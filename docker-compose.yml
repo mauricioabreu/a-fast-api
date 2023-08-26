@@ -19,7 +19,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
+          cpus: '0.3'
           memory: '512MB'
   api2:
     <<: *api
@@ -37,7 +37,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
+          cpus: '0.2'
           memory: '128MB'
   db:
     container_name: db
@@ -58,5 +58,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: '0.7'
           memory: '1GB'
