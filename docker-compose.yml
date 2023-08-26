@@ -1,5 +1,5 @@
 services:
-  api1:
+  api1: &api
     container_name: api1
     build: .
     ports:
@@ -13,6 +13,9 @@ services:
       - POSTGRES_USER=afastapi
       - POSTGRES_PASSWORD=afastapi
       - POSTGRES_DB=afastapi
+  api2:
+    <<: *api
+    container_name: api2
   lb:
     sysctls:
       net.core.somaxconn: 4096
