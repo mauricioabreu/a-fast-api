@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mauricioabreu/a-fast-api/db"
@@ -50,6 +51,9 @@ func CountPeople(q *db.Queries, ctx context.Context) (int64, error) {
 func FindPerson(uid string, q *db.Queries, ctx context.Context) (*PersonDTO, error) {
 	person, err := q.FindPerson(ctx, uid)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &PersonDTO{

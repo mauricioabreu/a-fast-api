@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -103,7 +102,7 @@ func main() {
 		ctx := context.Background()
 		p, err := people.FindPerson(c.Params("id"), queries, ctx)
 
-		if err == sql.ErrNoRows {
+		if err == people.ErrNotFound {
 			return c.SendStatus(fiber.StatusNotFound)
 		}
 
