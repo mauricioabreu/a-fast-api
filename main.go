@@ -18,33 +18,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func validateStack(fl validator.FieldLevel) bool {
-	if fl.Field().IsZero() {
-		return true
-	}
-
-	elements, ok := fl.Field().Interface().([]interface{})
-	if !ok {
-		return false
-	}
-
-	for _, elem := range elements {
-		str, ok := elem.(string)
-		if !ok || len(str) > 32 {
-			return false
-		}
-	}
-
-	return true
-}
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	validate := validator.New()
-	if err := validate.RegisterValidation("validateStack", validateStack); err != nil {
-		log.Fatal().Err(err).Msg("failed to register validation")
-	}
 
 	app := fiber.New(fiber.Config{
 		Prefork: true,
