@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -13,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/mauricioabreu/a-fast-api/db"
 	"github.com/mauricioabreu/a-fast-api/people"
+	"github.com/mauricioabreu/a-fast-api/tools"
 	"github.com/mauricioabreu/a-fast-api/validators"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,7 +26,7 @@ func main() {
 	validate := validator.New()
 
 	app := fiber.New(fiber.Config{
-		Prefork: true,
+		Prefork: false,
 	})
 
 	app.Use(logger.New())
@@ -108,5 +110,10 @@ func main() {
 		return c.Status(fiber.StatusOK).JSON(ppl)
 	})
 
-	log.Fatal().Err(app.Listen(":80")).Msg("failed to start server")
+	defer tools.StartProfiling(os.Getenv("PROFILER_MODE")).Stop()
+
+	if err := app.Listen(":80"); err != nil {
+		log.Warn().Err(err).Msg("failed to start server")
+		os.Exit(1)
+	}
 }
