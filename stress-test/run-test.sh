@@ -6,7 +6,7 @@
 
 GATLING_BIN_DIR=$HOME/gatling/bin
 
-WORKSPACE=/Users/mauricio.antunes/Code/rinha-de-backend-2023-q3/stress-test
+WORKSPACE=/Users/mauricio.antunes/Code/a-fast-api/stress-test
 
 sh $GATLING_BIN_DIR/gatling.sh -rm local -s RinhaBackendSimulation \
     -rd "DESCRICAO" \
