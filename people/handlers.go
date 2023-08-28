@@ -19,7 +19,7 @@ var (
 	ErrNotFound       = fmt.Errorf("person not found")
 )
 
-func InsertPerson(person PersonDTO, q *db.Queries, ctx context.Context) (string, error) {
+func CreatePerson(person PersonDTO, q *db.Queries, ctx context.Context) (string, error) {
 	birthDate, err := time.Parse("2006-01-02", person.Birthdate)
 	if err != nil {
 		return "", err
