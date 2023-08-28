@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mauricioabreu/a-fast-api/people"
+	"github.com/mauricioabreu/a-fast-api/api/people"
 	"github.com/mauricioabreu/a-fast-api/validators"
 	"github.com/rs/zerolog/log"
 )
