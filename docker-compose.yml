@@ -12,11 +12,11 @@ services:
       - ./profiling:/app/profiling
     working_dir: /app
     environment:
-      - POSTGRES_USER=afastapi
-      - POSTGRES_PASSWORD=afastapi
-      - POSTGRES_DB=afastapi
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
+      - DB_USER=afastapi
+      - DB_PASSWORD=afastapi
+      - DB_NAME=afastapi
+      - DB_HOST=db
+      - DB_PORT=5432
       - PROFILER_PATH=/app/profiling
       - PROFILER_MODE=cpu
     deploy:

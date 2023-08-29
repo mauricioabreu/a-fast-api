@@ -1,22 +1,21 @@
 package tools
 
 import (
-	"os"
-
+	"github.com/mauricioabreu/a-fast-api/config"
 	"github.com/pkg/profile"
 )
 
-func StartProfiling(profileMode string) interface{ Stop() } {
+func StartProfiling(cfg *config.Config) interface{ Stop() } {
 	var profiler interface{ Stop() }
-	switch profileMode {
+	switch cfg.ProfilerMode {
 	case "cpu":
 		profiler = profile.Start(
 			profile.CPUProfile,
-			profile.ProfilePath(os.Getenv("PROFILER_PATH")))
+			profile.ProfilePath(cfg.ProfilerPath))
 	case "mem":
 		profiler = profile.Start(
 			profile.MemProfile,
-			profile.ProfilePath(os.Getenv("PROFILER_PATH")))
+			profile.ProfilePath(cfg.ProfilerPath))
 	}
 
 	return profiler

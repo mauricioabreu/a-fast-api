@@ -3,6 +3,7 @@ module github.com/mauricioabreu/a-fast-api
 go 1.20
 
 require (
+	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-playground/validator/v10 v10.15.1
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/google/uuid v1.3.1
