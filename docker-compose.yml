@@ -42,7 +42,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
+          cpus: '0.1'
           memory: '128MB'
   db:
     container_name: db
@@ -63,7 +63,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.9'
+          cpus: '0.8'
           memory: '1GB'
   pgbouncer:
     container_name: pgbouncer
@@ -87,4 +87,4 @@ services:
       resources:
         limits:
           cpus: '0.2'
-          memory: '920MB'
+          memory: '896MB'
