@@ -36,7 +36,9 @@ func main() {
 
 	api.PeopleRouter(app, service)
 
-	defer tools.StartProfiling(cfg).Stop()
+	if cfg.ProfilerEnabeld {
+		defer tools.StartProfiling(cfg).Stop()
+	}
 
 	if err := app.Listen(":80"); err != nil {
 		log.Warn().Err(err).Msg("failed to start server")
