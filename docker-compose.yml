@@ -15,14 +15,16 @@ services:
       - DB_USER=afastapi
       - DB_PASSWORD=afastapi
       - DB_NAME=afastapi
-      - DB_HOST=db
-      - DB_PORT=5432
+      - DB_HOST=pgbouncer
+      - DB_PORT=6432
+      - USE_PREFORK=true
+      - PROFILER_ENABLED=false
       - PROFILER_PATH=/app/profiling
       - PROFILER_MODE=cpu
     deploy:
       resources:
         limits:
-          cpus: '0.3'
+          cpus: '0.2'
           memory: '512MB'
   api2:
     <<: *api
@@ -61,5 +63,28 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.7'
+          cpus: '0.9'
           memory: '1GB'
+  pgbouncer:
+    container_name: pgbouncer
+    image: bitnami/pgbouncer:latest
+    ports:
+      - "6432:6432"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./pgbouncer.ini:/bitnami/pgbouncer/conf/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    environment:
+      - PGBOUNCER_DATABASES=*:host=db port=5432
+      - POSTGRESQL_HOST=db
+      - POSTGRESQL_PASSWORD=afastapi
+      - PGBOUNCER_LISTEN_PORT=6432
+      - PGBOUNCER_LISTEN_ADDR=*
+      - PGBOUNCER_ADMIN_USERS=admin
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: '920MB'

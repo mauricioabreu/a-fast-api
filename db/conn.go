@@ -9,7 +9,7 @@ import (
 )
 
 func NewDB(cfg *config.Config) (*pgxpool.Pool, error) {
-	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?default_query_exec_mode=simple_protocol",
 		cfg.DBUser,
 		cfg.DBPassword,
 		cfg.DBHost,
